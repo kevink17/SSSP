@@ -58,10 +58,36 @@ void grid_print(Element* head)
 		current_row = current_row->left;
 	}
 }
+void grid_print_dot(Element* head)
+{
+    printf("digraph {\n");
+    Element* current_row = head;
+    Element* current;
+    while(current_row->left != NULL)
+    {
+        current = current_row;
+        while(current->right->right != NULL)
+        {
+            if(current->right != NULL)
+            {
+                printf("M%p -> M%p;\n",current,current->right);
+            }
+            if(current->left != NULL)
+            {
+                if(current->left->left != NULL)
+                {
+                    printf("M%p -> M%p;\n",current,current->left);
+                }
+            }
+            current = current->right;
+        }
+        current_row = current_row->left;
+    }
+    printf("}\n");
+}
 int main()
 {	
-	Element* grid = grid_init(6,8);
-	grid_print(grid);
+	Element* grid = grid_init(8,8);
+	grid_print_dot(grid);
 	return 0;
 }
-//C ist so ultra gay ich saß da Stunden dran
