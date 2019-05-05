@@ -87,7 +87,7 @@ void grid_print_dot(Element* head)
 }
 int main()
 {	
-	Element* grid = grid_init(8,8);
+	Element* grid = grid_init(2,2);
 	grid_print_dot(grid);
 	return 0;
 }
