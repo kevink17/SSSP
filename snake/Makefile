@@ -5,7 +5,7 @@ all: snake
 
 .PHONY: all clean
 
-snake: snake.o support.o -lgraph
+snake: snake.o support.o
 
 snake.o: snake.c support.h
 

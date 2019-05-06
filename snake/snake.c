@@ -3,10 +3,13 @@
 #include<stdlib.h> 
 #include "support.h"
 #include<stdbool.h>
+//Spielfeld, welches x Einheiten breit ist und y Einheiten hoch
 typedef struct field{
 	int x;
 	int y;
 }Field;
+//Teil einer Schlange, sie besitzt eine x und y Koordinate und eine Richtung in die sie sich als nächstes bewegt
+//Außerdem besitzt jedes Teil einer Schlange einen Vorgänger und einen Nachkommen
 typedef struct snake{
 	char direction;
 	int x;
@@ -14,10 +17,12 @@ typedef struct snake{
 	struct snake* tail;
 	struct snake* head;
 }Snake;
+//Essen welches eine x und eine y Koordinate besitzt
 typedef struct food{
 	int x;
 	int y;
 }Food;
+//Erzeugt ein neuen Food struct mit random x und y Werten abhängig vom Spielfeld
 Food* new_food(Field test)
 {
 	Food* new = malloc(sizeof(Food));
@@ -25,6 +30,8 @@ Food* new_food(Field test)
 	new->y = rand() % test.y;
 	return new;	
 }
+//Erzeugt neue Schalnge mit x und x Koordinate und einer Richtung
+//Vorgänger und Nachkomme sind bei default auf NULL
 Snake* new_snake(int x, int y, char direction)
 {
 	Snake* new = malloc(sizeof(Snake));
@@ -35,11 +42,13 @@ Snake* new_snake(int x, int y, char direction)
 	new->head = NULL;
 	return new;
 }
+//Verbindet zwei Schlangenteile
 void  append_snake(Snake* snake_head,Snake* snake_tail)
 {
 	snake_head->tail = snake_tail;
 	snake_tail->head = snake_head;
 }
+//Erzeugt ein neues Feld
 Field new_field(int x,int y)
 {
 	Field new;
@@ -47,12 +56,14 @@ Field new_field(int x,int y)
 	new.y = y;
 	return new;
 }
-
+//Printed das gegebene Feld mit der Schalnge und einer Frucht
 void print(Field field, Snake* snake_head, Food* fruit)
 {
 	Snake* current;
 	bool printed = false;
+	//Erstellt viele neue Zeilen damit man nur immer das neueste Feld sieht
 	printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+	//printed obere Wand
 	for(int i = 0; i < field.x+2; i++)
 	{
 		printf("=");
@@ -65,8 +76,11 @@ void print(Field field, Snake* snake_head, Food* fruit)
 		{
 			printed = false;
 			current = snake_head;
+			//Teste ob ein Teil einer Schlange geprintet werden muss oder ein leeres Feld
+			//auf den Koordinaten j und i
 			while(current != NULL)
-			{
+			{	
+				//Geh mit der Schleife einmal jedes Teil der Schlange durch
 				if(current->x == j & current->y == i)
 				{
 					printf("H");
@@ -75,11 +89,13 @@ void print(Field field, Snake* snake_head, Food* fruit)
 				
 				current = current->tail;
 			}
+			//Teste ob eine Frucht geprinted werden muss
 			if(fruit->x == j & fruit->y == i & printed == false)
 			{
 					printf("+");
 					printed = true;
 			}
+			//Falls weder Schalnge noch Frucht da ist printe ein leeres Feld
 			if(!printed)
 			{
 				printf(" ");
@@ -90,15 +106,19 @@ void print(Field field, Snake* snake_head, Food* fruit)
 		printf("|\n");
 
 	}
+	//printed untere Wand
 	for(int i = 0; i < field.x+2; i++)
 	{
 		printf("=");
 	}
 	printf("\n");
 }
+//Bewegt die gegebene Schlange indem es seine x und y Koordinaten verändert anhand der directions
+//Außerdem werden directions aktualisiert von den einzelnen Schlangenteilen bei Kurven
 void move(Snake* snake_head)
 {	
 	Snake* current = snake_head;
+	//Verschiebe jeden Snaketeil einmal
 	while(current != NULL)
 	{
 		switch(current->direction)
@@ -119,23 +139,30 @@ void move(Snake* snake_head)
 		current = current->tail;
 	}
 	current = snake_head;
+	//Gehe zum Ende der Schlange
 	while(current->tail != NULL)
 	{
 		current = current->tail;
 	}
+	//Passe die neue direction jedes Schlangenteils an 
+	//anhand seines Vorgängers außer die des Kopfes der Schlange
 	while(current != snake_head)
 	{
 		current->direction = current->head->direction;
 		current = current->head;
 	}
 }
+//Testet ob der Kopf der Schlange eine Kollision mit 
+//einer Wand hat oder mit sich selbst
 bool collision(Snake* snake_head,Field test)
 {
 	Snake* current = snake_head;
+	//Testet ob der Kopf außerhalb des Bereiches ist
 	if((snake_head->x < 0) || (snake_head->y < 0) || (snake_head->x > test.x) || (snake_head->y > test.y))
 	{
 		return true;
 	}
+	//Testet ob der Kopf dieselbe Koordinate hat wie ein Teil der Schlange
 	while(current->tail != NULL)
 	{
 		current = current->tail;
@@ -148,6 +175,7 @@ bool collision(Snake* snake_head,Field test)
 }
 int main()
 { 	
+	//Inititalisierung
 	srand(time(NULL));
 	support_init();
 	char key;
@@ -168,14 +196,18 @@ int main()
 	{	
 		print(test,snake_head,fruit);
 		move(snake_head);
+		//Teste ob die Schlange auf einem Food Feld ist
 		if(snake_head->x == fruit->x & snake_head->y == fruit->y)
 		{
+			//setzt neues food
 			fruit = new_food(test);
 			current = snake_head;
+			//Gehe zum Schwanz der Schlange
 			while(current->tail != NULL)
 			{
 				current = current->tail;
 			}
+			//Hänge ein neues Schlangenteil an
 			switch(current->direction)
 			{
 				case 'w':
@@ -192,7 +224,9 @@ int main()
 					break;
 			}
 		}
+		//Lies Eingabe vom Benutzer
 		key = support_readkey(1000);
+		//Ändere Richtung entsprechend der Eingabe
 		switch(key)
 		{
 			case 'w':
@@ -220,6 +254,7 @@ int main()
 				}
 				break;
 		}
+		//Falls Kollision auftritt beende die Endlosschleife
 		if(collision(snake_head,test))
 		{
 			break;
